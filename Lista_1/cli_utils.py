@@ -50,7 +50,7 @@ def travel_schedule(path: list[(Stop, Connection)]):
 
     return schedule
 
-def print_travel_schedule(schedule: list[(Stop, Connection)]):
+def print_travel_schedule(schedule: list[(Stop, Connection, Connection)]):
     style = "{:<10} {:<40} {:<15} {:<40} {:<15}"
     
     print(style.format("Line", "Start stop", "Departure Time", "End Stop", "Arrival Time"), "\n")
@@ -60,6 +60,18 @@ def print_travel_schedule(schedule: list[(Stop, Connection)]):
                     first_connection.line, stop.name,
                     convert_normalized_time(first_connection.departure_time),
                     last_connection.end_stop.name,
-                    convert_normalized_time(last_connection.arrival_time)))
-        
+                    convert_normalized_time(last_connection.arrival_time)))      
+    print()
+
+def print_path(path: list[Stop, Connection]):
+    style = "{:<10} {:<40} {:<15} {:<40} {:<15}"
+    
+    print(style.format("Line", "Departure stop", "Departure Time", "Next Stop", "Arrival Time"), "\n")
+    
+    for stop, connection in path:
+        print(style.format(
+                    connection.line, stop.name,
+                    convert_normalized_time(connection.departure_time),
+                    connection.end_stop.name,
+                    convert_normalized_time(connection.arrival_time)))
     print()
