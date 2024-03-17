@@ -33,11 +33,11 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
     path = []
     current_record = came_from[goal]
     while current_record[0] != start:
-        path_tuple = (current_record[0].name, current_record[1])
+        path_tuple = (current_record[0], current_record[1])
         path.append(path_tuple)
         current_record = came_from[current_record[0]]
     
-    path_tuple = (current_record[0].name, current_record[1])
+    path_tuple = (current_record[0], current_record[1])
     path.append(path_tuple)
     path.reverse()
 
@@ -100,7 +100,7 @@ def main():
     NO_STOP_FOUND_MESSAGE = "Incorrect name of stop:"
     INCORRECT_OPTIMIZATION_CRITERIUM_MESSAGE = "Incorrect optimization option!"
 
-    AVG_SPEED_KM_PER_H = 5.0
+    AVG_SPEED_KM_PER_H = 1.0
     TIME_COST_FUNCTION = calculate_time
     TIME_HEURISTIC = lambda start, end, _: time_heuristic(start, end, euclidean_distance, AVG_SPEED_KM_PER_H)
 

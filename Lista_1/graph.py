@@ -38,6 +38,9 @@ class Stop:
     
     def __repr__(self) -> str:
         return self.name
+    
+    def __lt__(self, other):
+        return self.name < other.name
 
 @dataclasses.dataclass()
 class Connection:

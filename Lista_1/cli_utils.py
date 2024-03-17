@@ -57,7 +57,7 @@ def print_travel_schedule(schedule: list[(Stop, Connection)]):
     
     for stop, first_connection, last_connection in schedule:
         print(style.format(
-                    first_connection.line, stop,
+                    first_connection.line, stop.name,
                     convert_normalized_time(first_connection.departure_time),
                     last_connection.end_stop.name,
                     convert_normalized_time(last_connection.arrival_time)))
