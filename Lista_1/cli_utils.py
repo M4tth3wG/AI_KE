@@ -1,4 +1,5 @@
 from graph import *
+import sys
 
 def normalize_input_time(time_str):
     hours, minutes, *_ = map(int, time_str.split(':'))
