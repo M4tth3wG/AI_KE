@@ -23,7 +23,7 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
             current_cost = cost_so_far[current]
             previous_connection = came_from[current][1]
 
-            new_cost = current_cost + cost_fn(start_time + current_cost, previous_connection, connection)
+            new_cost = current_cost + cost_fn(start_time, current_cost, previous_connection, connection)
             if neighbor_stop not in cost_so_far or new_cost < cost_so_far[neighbor_stop]:
                 cost_so_far[neighbor_stop] = new_cost
                 priority = new_cost + heuristic_fn(goal, neighbor_stop, previous_connection)
@@ -43,7 +43,9 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
 
     return path, cost_so_far[goal]
 
-def calculate_time(current_time: int, previous_connection: Connection, next_connection: Connection):
+def calculate_time(start_time: int, current_cost: int, _, next_connection: Connection):
+    current_time = start_time + current_cost
+    
     current_time = current_time % (24 * 60)
     
     wating_time = next_connection.departure_time - current_time
@@ -58,9 +60,9 @@ def calculate_time(current_time: int, previous_connection: Connection, next_conn
 
     return wating_time + travel_time
 
-def calculate_line_changes(current_time: int, previous_connection: Connection, next_connection: Connection):
+def calculate_line_changes(start_time: int, _, previous_connection: Connection, next_connection: Connection):
     if previous_connection == None:
-        if current_time > next_connection.departure_time:
+        if start_time > next_connection.departure_time:
             return 1
         else:
             return 0
