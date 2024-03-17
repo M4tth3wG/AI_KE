@@ -8,7 +8,7 @@ DATA_DELIMITER = ','
 DATA_FILE_PATH = pathlib.Path(DATA_FOLDER).joinpath(DATA_FILE_NAME)
 
 def normalize_time(time_str):
-    hour, minute, second = map(int, time_str.split(':'))
+    hour, minute, *_ = map(int, time_str.split(':'))
     hour = hour % 24
 
     return hour * 60 + minute
@@ -39,6 +39,8 @@ def normalize_coordinates_in_dataframe(dataframe: pd.DataFrame):
 def load_data_to_graph(file_path, delimeter, normalize_coordinates=False):
     df = pd.read_csv(file_path, delimiter=delimeter, low_memory=False)
 
+    df['start_stop'] = df['start_stop'].str.lower()
+    df['end_stop'] = df['end_stop'].str.lower()
     df = normalize_time_in_dataframe(df)
 
     if normalize_coordinates:
@@ -50,9 +52,17 @@ def load_data_to_graph(file_path, delimeter, normalize_coordinates=False):
     return graph.Graph(records)
 
 def main():
-    graph = load_data_to_graph(DATA_FILE_PATH, DATA_DELIMITER, True)
+    #graph = load_data_to_graph(DATA_FILE_PATH, DATA_DELIMITER, True)
     
-    print(len(graph.graph_dict))
+    #print(len(graph.graph_dict))
+
+    df = pd.read_csv(DATA_FILE_PATH, delimiter=DATA_DELIMITER, low_memory=False)
+
+    df = normalize_time_in_dataframe(df)
+
+    result = df[df['departure_time'] > df['arrival_time']]
+
+    print(result[result['end_stop'] == 'Wrocławski Park Przemysłowy'])
 
 if __name__ == '__main__':
     main()

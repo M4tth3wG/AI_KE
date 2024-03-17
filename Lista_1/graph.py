@@ -23,7 +23,7 @@ class Graph:
             connection = Connection(line, departure_time, arrival_time, end_stop_node)
             start_stop_node.connections.append(connection)
 
-@dataclasses.dataclass(eq=False)
+@dataclasses.dataclass(eq=False, repr=False)
 class Stop:
     name : float
     lat : float
@@ -32,6 +32,9 @@ class Stop:
 
     def __eq__(self, __value: object) -> bool:
         return self.name == __value.name
+    
+    def __repr__(self) -> str:
+        return self.name
 
 @dataclasses.dataclass()
 class Connection:
