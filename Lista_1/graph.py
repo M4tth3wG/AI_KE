@@ -8,17 +8,17 @@ class Graph:
 
         for line, departure_time, arrival_time, start_stop, end_stop, start_stop_lat, start_stop_lon, end_stop_lat, end_stop_lon in record:
 
-            if end_stop in self.graph_dict:
-                end_stop_node = self.graph_dict[end_stop]
+            if end_stop.lower() in self.graph_dict:
+                end_stop_node = self.graph_dict[end_stop.lower()]
             else:
                 end_stop_node = Stop(end_stop, end_stop_lat, end_stop_lon, [])
-                self.graph_dict[end_stop] = end_stop_node
+                self.graph_dict[end_stop.lower()] = end_stop_node
 
-            if start_stop in self.graph_dict:
-                start_stop_node = self.graph_dict[start_stop]
+            if start_stop.lower() in self.graph_dict:
+                start_stop_node = self.graph_dict[start_stop.lower()]
             else:
                 start_stop_node = Stop(start_stop, start_stop_lat, start_stop_lon, [])
-                self.graph_dict[start_stop] = start_stop_node
+                self.graph_dict[start_stop.lower()] = start_stop_node
 
             connection = Connection(line, departure_time, arrival_time, end_stop_node)
             start_stop_node.connections.append(connection)
