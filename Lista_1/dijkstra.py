@@ -4,23 +4,9 @@ import data_loader
 from timer import Timer
 from cli_utils import *
 import sys
+import cost_functions as cf
 
-def calculate_time(current_time: int, connection: Connection):
-    current_time = current_time % (24 * 60)
-    
-    wating_time = connection.departure_time - current_time
-
-    if wating_time < 0:
-        wating_time = wating_time + 24 * 60
-
-    travel_time = connection.arrival_time - connection.departure_time
-
-    if travel_time < 0:
-        travel_time = travel_time + 24 * 60
-
-    return wating_time + travel_time
-
-def dijkstra(graph_dict: dict[str, Stop], start_stop, start_time: int):
+def dijkstra(graph_dict: dict[str, Stop], start_stop, start_time: int, cost_fn):
     start_stop_node = graph_dict[start_stop]
 
     times = {node: float('inf') for node in graph_dict.values()}
@@ -35,7 +21,7 @@ def dijkstra(graph_dict: dict[str, Stop], start_stop, start_time: int):
             continue
 
         for connection in curr_node.connections:
-            new_time = curr_time + calculate_time(curr_time + start_time, connection)
+            new_time = curr_time + cost_fn(start_time, curr_time, connection)
 
             if new_time < times[connection.end_stop]:
                 times[connection.end_stop] = new_time
@@ -44,8 +30,8 @@ def dijkstra(graph_dict: dict[str, Stop], start_stop, start_time: int):
 
     return times, prev_nodes
 
-def shortest_path(graph_dict, start_stop, goal_stop, start_time):
-    times, prev_nodes = dijkstra(graph_dict, start_stop, start_time)
+def shortest_path(graph_dict, start_stop, goal_stop, start_time, cost_fn):
+    times, prev_nodes = dijkstra(graph_dict, start_stop, start_time, cost_fn)
 
     goal_stop_node = graph_dict[goal_stop]
     path = []
@@ -85,7 +71,7 @@ def main():
             return
 
     timer = Timer()
-    time, path = timer.run(lambda : shortest_path(graph.graph_dict, start_stop, goal_stop, normalized_time))
+    time, path = timer.run(lambda : shortest_path(graph.graph_dict, start_stop, goal_stop, normalized_time, cf.calculate_time))
     
     schedule = travel_schedule(path)
     print_travel_schedule(schedule)

@@ -34,7 +34,7 @@ def convert_normalized_time(time: int):
 
 def travel_schedule(path: list[(Stop, Connection)]):
     first_stop, first_connection = path[0]
-    last_stop, last_connection = path[0]
+    _, last_connection = path[0]
     schedule = []
 
     for stop, connection in path:
@@ -44,7 +44,6 @@ def travel_schedule(path: list[(Stop, Connection)]):
             first_connection = connection
 
         last_connection = connection
-        last_stop = stop
 
     schedule.append((first_stop, first_connection, last_connection))
 

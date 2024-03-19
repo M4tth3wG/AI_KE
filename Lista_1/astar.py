@@ -1,10 +1,9 @@
 import heapq
-import math
 from graph import *
-from geopy import distance as gp_distance
 from cli_utils import *
 import data_loader
 from timer import Timer
+import cost_functions as cf
 
 
 def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
@@ -24,9 +23,11 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
             previous_connection = came_from[current][1]
 
             new_cost = current_cost + cost_fn(start_time, current_cost, previous_connection, connection)
+
             if neighbor_stop not in cost_so_far or new_cost < cost_so_far[neighbor_stop]:
+
                 cost_so_far[neighbor_stop] = new_cost
-                priority = new_cost + heuristic_fn(goal, neighbor_stop, previous_connection)
+                priority = new_cost + heuristic_fn(current, goal, previous_connection, connection)
                 heapq.heappush(front, (priority, neighbor_stop))
                 came_from[neighbor_stop] = (current, connection)
 
@@ -43,76 +44,23 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
 
     return path, cost_so_far[goal]
 
-def calculate_time(start_time: int, current_cost: int, _, next_connection: Connection):
-    current_time = start_time + current_cost
-    
-    current_time = current_time % (24 * 60)
-    
-    wating_time = next_connection.departure_time - current_time
-
-    if wating_time < 0:
-        wating_time = wating_time + 24 * 60
-
-    travel_time = next_connection.arrival_time - next_connection.departure_time
-
-    if travel_time < 0:
-        travel_time = travel_time + 24 * 60
-
-    return wating_time + travel_time
-
-def calculate_line_changes(start_time: int, _, previous_connection: Connection, next_connection: Connection):
-    if previous_connection == None:
-        if start_time > next_connection.departure_time:
-            return 1
-        else:
-            return 0
-    
-    if previous_connection.line != next_connection.line \
-        or previous_connection.arrival_time != next_connection.departure_time:
-
-        return 1
-
-    return 0
-
-def euclidean_distance(a, b):
-    return gp_distance.distance(a, b).km
-
-def manhattan_distance(a, b):
-    lat_distance = gp_distance.distance(a, (b[0], a[1])).km
-    lon_distance = gp_distance.distance((b[0], a[1]), b).km
-    
-    return lat_distance + lon_distance
-
-def time_heuristic(start_stop, end_stop, dist_func, speed_in_km):
-    start_coordinates = (start_stop.lat, start_stop.lon)
-    end_coordinates = (end_stop.lat, end_stop.lon)
-    
-    return dist_func(start_coordinates, end_coordinates) / speed_in_km * 60
-
-def line_change_heuristic(start_stop, end_stop, dist_func, average_line_change_per_km):
-    start_coordinates = (start_stop.lat, start_stop.lon)
-    end_coordinates = (end_stop.lat, end_stop.lon)
-    
-    return dist_func(start_coordinates, end_coordinates) * average_line_change_per_km
-
-
 def main():
     INCORRECT_NUMBER_OF_ARGUMENTS_MESSAGE = "Incorrect number of arguments!"
     INCORRECT_TIME_MESSAGE = "Incorrect time!"
     NO_STOP_FOUND_MESSAGE = "Incorrect name of stop:"
     INCORRECT_OPTIMIZATION_CRITERIUM_MESSAGE = "Incorrect optimization option!"
 
-    AVG_SPEED_KM_PER_H = 1.0
-    TIME_COST_FUNCTION = calculate_time
-    TIME_HEURISTIC = lambda start, end, _: time_heuristic(start, end, euclidean_distance, AVG_SPEED_KM_PER_H)
+    TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
+    TIME_COST_FUNCTION = lambda start_time, current_cost, _, connection : cf.calculate_time(start_time, current_cost, connection)
+    TIME_HEURISTIC = lambda start, end, _: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
 
-    AVG_LINE_CHANGE_PER_KM = 2
-    LINE_CHANGE_FUNCTION = calculate_line_changes
-    LINE_CHANGE_HEURISTIC = lambda start, end, _: line_change_heuristic(start, end, euclidean_distance, AVG_LINE_CHANGE_PER_KM)
+    LINE_CHANGE_HEURITSTIC_WEIGHT = 0.25
+    LINE_CHANGE_COST_FUNCTION = cf.calculate_line_changes
+    LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
 
     options_dict = {
         't' : (TIME_COST_FUNCTION, TIME_HEURISTIC),
-        'p' : (LINE_CHANGE_FUNCTION, LINE_CHANGE_HEURISTIC)
+        'p' : (LINE_CHANGE_COST_FUNCTION, LINE_CHANGE_HEURISTIC)
         }
 
     arguments = sys.argv[1:]
@@ -140,7 +88,7 @@ def main():
         print(INCORRECT_TIME_MESSAGE)
         return
 
-    graph = data_loader.load_data_to_graph(data_loader.DATA_FILE_PATH, data_loader.DATA_DELIMITER, False)
+    graph = data_loader.load_data_to_graph(data_loader.DATA_FILE_PATH, data_loader.DATA_DELIMITER, True)
 
     for stop in (start_stop, goal_stop):
         if not stop in graph.graph_dict:
