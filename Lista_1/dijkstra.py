@@ -78,6 +78,9 @@ def main():
 
     print(f'Cost value: {time}', f'Computation time: {timer.elapsed_time} s', file=sys.stderr, sep='\n')
 
+    map = create_map(path)
+    open_map(map)
+
 if __name__ == '__main__':
     main()
     

@@ -50,19 +50,6 @@ def main():
     NO_STOP_FOUND_MESSAGE = "Incorrect name of stop:"
     INCORRECT_OPTIMIZATION_CRITERIUM_MESSAGE = "Incorrect optimization option!"
 
-    TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
-    TIME_COST_FUNCTION = lambda start_time, current_cost, _, connection : cf.calculate_time(start_time, current_cost, connection)
-    TIME_HEURISTIC = lambda start, end, _: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
-
-    LINE_CHANGE_HEURITSTIC_WEIGHT = 0.25
-    LINE_CHANGE_COST_FUNCTION = cf.calculate_line_changes
-    LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
-
-    options_dict = {
-        't' : (TIME_COST_FUNCTION, TIME_HEURISTIC),
-        'p' : (LINE_CHANGE_COST_FUNCTION, LINE_CHANGE_HEURISTIC)
-        }
-
     arguments = sys.argv[1:]
 
     if len(arguments) != 4:
@@ -74,6 +61,25 @@ def main():
     optimization_criterium = arguments[2].lower()
     time_str = arguments[3]
 
+    try:
+        normalized_time = normalize_input_time(time_str)
+    except ValueError:
+        print(INCORRECT_TIME_MESSAGE)
+        return
+    
+    TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
+    TIME_COST_FUNCTION = lambda start_time, current_cost, _, connection : cf.calculate_time(start_time, current_cost, connection)
+    TIME_HEURISTIC = lambda start, end, *_: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
+
+    LINE_CHANGE_HEURITSTIC_WEIGHT = 0.25
+    LINE_CHANGE_COST_FUNCTION = lambda start_time, _, previous_connection, next_connection : cf.line_changes_cost(start_time, previous_connection, next_connection)
+    LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(normalized_time, current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
+
+    options_dict = {
+        't' : (TIME_COST_FUNCTION, TIME_HEURISTIC),
+        'p' : (LINE_CHANGE_COST_FUNCTION, LINE_CHANGE_HEURISTIC)
+        }
+
     if optimization_criterium in options_dict:
         options = options_dict[optimization_criterium]
     else:
@@ -82,20 +88,13 @@ def main():
     
     cost_fn, heuristic_fn = options
 
-    try:
-        normalized_time = normalize_input_time(time_str)
-    except ValueError:
-        print(INCORRECT_TIME_MESSAGE)
-        return
-
     graph = data_loader.load_data_to_graph(data_loader.DATA_FILE_PATH, data_loader.DATA_DELIMITER, True)
 
     for stop in (start_stop, goal_stop):
         if not stop in graph.graph_dict:
             print(NO_STOP_FOUND_MESSAGE, stop)
             return
-
-
+    
     start_stop = graph.graph_dict[start_stop]
     goal_stop = graph.graph_dict[goal_stop]
 
@@ -106,6 +105,9 @@ def main():
     print_travel_schedule(schedule)
 
     print(f'Cost value: {time}', f'Computation time: {timer.elapsed_time} s', file=sys.stderr, sep='\n')
+
+    map = create_map(path)
+    open_map(map)
 
 if __name__ == '__main__':
     main()
