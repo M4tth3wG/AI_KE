@@ -106,14 +106,18 @@ def advanced_line_change_heuristic(start_time, current_stop, goal_stop, previous
     current_distance = dist_func(start_coordinates, end_coordinates)
     next_distance = dist_func(next_coordinates, end_coordinates)
 
+    # if previous_connection == None: # if at start stop
+    #     return 0 if next_line_is_direct else 2000
+
     if current_line_is_direct and line_is_changed:
         heuristic_cost = float('inf') # penalty for changing good line
     elif current_line_is_direct:
-        heuristic_cost = 100 * weight if next_distance - current_distance > 0 else 0 # penalty if getting away from goal
+        #heuristic_cost = 100 * weight if next_distance - current_distance > 0 else 0 # penalty if getting away from goal
+        heuristic_cost = (next_distance - current_distance) * weight if next_distance - current_distance > 0 else 0 # penalty if getting away from goal
     elif next_line_is_direct:
         heuristic_cost = 0 # good change
     elif line_is_changed:
-        heuristic_cost = 10 # small penalty
+        heuristic_cost = weight * next_distance
     else:
         heuristic_cost = next_distance
 
