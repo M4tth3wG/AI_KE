@@ -61,7 +61,7 @@ def manhattan_distance(a, b):
 
 # heuristic functions
 
-def time_heuristic(start_stop, end_stop, dist_func, heuristic_speed = DEFAULT_TIME_HEURISTIC_SPEED):
+def time_heuristic(_, start_stop, end_stop, dist_func, heuristic_speed = DEFAULT_TIME_HEURISTIC_SPEED):
     start_coordinates = (start_stop.lat, start_stop.lon)
     end_coordinates = (end_stop.lat, end_stop.lon)
     

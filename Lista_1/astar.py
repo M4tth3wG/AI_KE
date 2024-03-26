@@ -7,11 +7,11 @@ import cost_functions as cf
 
 TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
 TIME_COST_FUNCTION = lambda start_time, current_cost, end, _, connection : cf.calculate_time(start_time, current_cost, connection)
-TIME_HEURISTIC = lambda start, end, *_: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
+TIME_HEURISTIC = lambda start_time, start, end, test, _: cf.time_heuristic(start_time, start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
 
 LINE_CHANGE_HEURITSTIC_WEIGHT = 10
 LINE_CHANGE_COST_FUNCTION = lambda start_time, _, end, previous_connection, next_connection : cf.line_changes_cost(start_time, end, previous_connection, next_connection)
-LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(normalized_time, current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
+LINE_CHANGE_HEURISTIC = lambda start_time, current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(start_time, current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
 
 
 def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
@@ -35,7 +35,7 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
             if neighbor_stop not in cost_so_far or new_cost < cost_so_far[neighbor_stop]:
 
                 cost_so_far[neighbor_stop] = new_cost
-                priority = new_cost + heuristic_fn(current, goal, previous_connection, connection)
+                priority = new_cost + heuristic_fn(start_time, current, goal, previous_connection, connection)
                 heapq.heappush(front, (priority, neighbor_stop))
                 came_from[neighbor_stop] = (current, connection)
 
@@ -50,7 +50,7 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
     path.append(path_tuple)
     path.reverse()
 
-    return path, cost_so_far[goal]
+    return cost_so_far[goal], path
 
 def main():
     INCORRECT_NUMBER_OF_ARGUMENTS_MESSAGE = "Incorrect number of arguments!"
@@ -99,7 +99,7 @@ def main():
     goal_stop = graph.graph_dict[goal_stop]
 
     timer = Timer()
-    path, time = timer.run(lambda : astar(start_stop, goal_stop, normalized_time, cost_fn, heuristic_fn))
+    time, path = timer.run(lambda : astar(start_stop, goal_stop, normalized_time, cost_fn, heuristic_fn))
     
     schedule = travel_schedule(path)
     print_travel_schedule(schedule)
