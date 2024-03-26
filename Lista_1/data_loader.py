@@ -36,7 +36,7 @@ def normalize_coordinates_in_dataframe(dataframe: pd.DataFrame):
 
     return dataframe
 
-def load_data_to_graph(file_path, delimeter, normalize_coordinates=False):
+def load_data_to_graph(file_path=DATA_FILE_PATH, delimeter=DATA_DELIMITER, normalize_coordinates=False):
     df = pd.read_csv(file_path, delimiter=delimeter, low_memory=False)
 
     df = normalize_time_in_dataframe(df)
