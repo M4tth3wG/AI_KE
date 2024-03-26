@@ -29,10 +29,12 @@ def line_changed(previous_connection: Connection, next_connection: Connection):
         or previous_connection.arrival_time != next_connection.departure_time
 
 def line_changes_cost(start_time: int, previous_connection: Connection, next_connection: Connection):
-    if previous_connection == None and normalized_time_difference(start_time, next_connection.departure_time) > 10:
-        return float('inf') # penalty
-    elif previous_connection != None and normalized_time_difference(previous_connection.arrival_time, next_connection.departure_time) > 10:
-        return float('inf') 
+    WAITING_LIMIT = 10
+    
+    if previous_connection == None and normalized_time_difference(start_time, next_connection.departure_time) > WAITING_LIMIT:
+        return float('inf')
+    elif previous_connection != None and normalized_time_difference(previous_connection.arrival_time, next_connection.departure_time) > WAITING_LIMIT:
+        return float('inf')
     
     return 1 if line_changed(previous_connection, next_connection) else 0
 
