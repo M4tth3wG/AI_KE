@@ -4,7 +4,7 @@ from geopy import distance as gp_distance
 
 DEFAULT_ADVANCED_LINE_CHANGE_HEURISTIC_WEIGHT = 0.25
 DEFAULT_TIME_HEURISTIC_SPEED = 4.85 / 60 # km/h to km/min
-
+WAITING_LIMIT = 20
 
 # cost functions
 
@@ -29,7 +29,7 @@ def line_changed(previous_connection: Connection, next_connection: Connection):
         or previous_connection.arrival_time != next_connection.departure_time
 
 def line_changes_cost(start_time: int, previous_connection: Connection, next_connection: Connection):
-    WAITING_LIMIT = 10
+
     
     if previous_connection == None and normalized_time_difference(start_time, next_connection.departure_time) > WAITING_LIMIT:
         return float('inf')
@@ -106,18 +106,16 @@ def advanced_line_change_heuristic(start_time, current_stop, goal_stop, previous
     current_distance = dist_func(start_coordinates, end_coordinates)
     next_distance = dist_func(next_coordinates, end_coordinates)
 
-    if previous_connection != None and normalized_time_difference(previous_connection.arrival_time, next_connection.departure_time) > 60:
-        heuristic_cost = 2000
-    elif previous_connection == None and normalized_time_difference(start_time, next_connection.departure_time) > 60:
-        heuristic_cost = 2000
-    elif current_line_is_direct and line_is_changed:
-        heuristic_cost = 1000
+    if current_line_is_direct and line_is_changed:
+        heuristic_cost = float('inf') # penalty for changing good line
     elif current_line_is_direct:
-        heuristic_cost = 100 if next_distance - current_distance > 0 else 0 # penalty if getting away from goal
+        heuristic_cost = 100 * weight if next_distance - current_distance > 0 else 0 # penalty if getting away from goal
     elif next_line_is_direct:
-        heuristic_cost = 0 # reward
-    else:
+        heuristic_cost = 0 # good change
+    elif line_is_changed:
         heuristic_cost = 10 # small penalty
+    else:
+        heuristic_cost = next_distance
 
     return heuristic_cost
 
