@@ -13,22 +13,22 @@ def normalize_input_time(time_str):
 
     return hours * 60 + minutes
 
-def travel_schedule(path: list[(Stop, Connection)]):
-    last_stop, last_connection = path[0]
-    last_departure_time = last_connection.departure_time
-    schedule = []
+# def travel_schedule(path: list[(Stop, Connection)]):
+#     last_stop, last_connection = path[0]
+#     last_departure_time = last_connection.departure_time
+#     schedule = []
 
-    for stop, connection in path:
-        if connection.line != last_connection.line:
-            schedule.append((last_stop, last_departure_time, last_connection))
-            last_stop = stop
-            last_departure_time = connection.departure_time
+#     for stop, connection in path:
+#         if connection.line != last_connection.line:
+#             schedule.append((last_stop, last_departure_time, last_connection))
+#             last_stop = stop
+#             last_departure_time = connection.departure_time
 
-        last_connection = connection
+#         last_connection = connection
 
-    schedule.append((schedule[-1][2].end_stop, schedule[-1][2].departure_time, connection))
+#     schedule.append((schedule[-1][2].end_stop, schedule[-1][2].departure_time, connection))
 
-    return schedule
+#     return schedule
 
 def convert_normalized_time(time: int):
     hours = time // 60

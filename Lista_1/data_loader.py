@@ -39,8 +39,6 @@ def normalize_coordinates_in_dataframe(dataframe: pd.DataFrame):
 def load_data_to_graph(file_path, delimeter, normalize_coordinates=False):
     df = pd.read_csv(file_path, delimiter=delimeter, low_memory=False)
 
-    # df['start_stop'] = df['start_stop'].str.lower()
-    # df['end_stop'] = df['end_stop'].str.lower()
     df = normalize_time_in_dataframe(df)
 
     if normalize_coordinates:
