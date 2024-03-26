@@ -5,6 +5,14 @@ import data_loader
 from timer import Timer
 import cost_functions as cf
 
+TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
+TIME_COST_FUNCTION = lambda start_time, current_cost, end, _, connection : cf.calculate_time(start_time, current_cost, connection)
+TIME_HEURISTIC = lambda start, end, *_: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
+
+LINE_CHANGE_HEURITSTIC_WEIGHT = 10
+LINE_CHANGE_COST_FUNCTION = lambda start_time, _, end, previous_connection, next_connection : cf.line_changes_cost(start_time, end, previous_connection, next_connection)
+LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(normalized_time, current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
+
 
 def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
     front = [(0, start)]
@@ -67,14 +75,6 @@ def main():
         print(INCORRECT_TIME_MESSAGE)
         return
     
-    TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
-    TIME_COST_FUNCTION = lambda start_time, current_cost, end, _, connection : cf.calculate_time(start_time, current_cost, connection)
-    TIME_HEURISTIC = lambda start, end, *_: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
-
-    LINE_CHANGE_HEURITSTIC_WEIGHT = 10
-    LINE_CHANGE_COST_FUNCTION = lambda start_time, _, end, previous_connection, next_connection : cf.line_changes_cost(start_time, end, previous_connection, next_connection)
-    LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(normalized_time, current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
-
     options_dict = {
         't' : (TIME_COST_FUNCTION, TIME_HEURISTIC),
         'p' : (LINE_CHANGE_COST_FUNCTION, LINE_CHANGE_HEURISTIC)

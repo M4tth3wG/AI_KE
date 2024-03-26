@@ -6,6 +6,8 @@ from cli_utils import *
 import sys
 import cost_functions as cf
 
+DEFAULT_COST_FUNCTION = cf.calculate_time
+
 def dijkstra(graph_dict: dict[str, Stop], start_stop, start_time: int, cost_fn):
     start_stop_node = graph_dict[start_stop]
 
@@ -71,7 +73,7 @@ def main():
             return
 
     timer = Timer()
-    time, path = timer.run(lambda : shortest_path(graph.graph_dict, start_stop, goal_stop, normalized_time, cf.calculate_time))
+    time, path = timer.run(lambda : shortest_path(graph.graph_dict, start_stop, goal_stop, normalized_time, DEFAULT_COST_FUNCTION))
     
     schedule = travel_schedule(path)
     print_travel_schedule(schedule)
