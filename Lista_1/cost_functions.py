@@ -4,7 +4,7 @@ from geopy import distance as gp_distance
 
 DEFAULT_ADVANCED_LINE_CHANGE_HEURISTIC_WEIGHT = 10
 DEFAULT_TIME_HEURISTIC_SPEED = 4.85 / 60 # km/h to km/min
-WAITING_LIMIT = 15
+WAITING_LIMIT = 30
 
 # cost functions
 
@@ -28,13 +28,17 @@ def line_changed(previous_connection: Connection, next_connection: Connection):
     return previous_connection.line != next_connection.line \
         or previous_connection.arrival_time != next_connection.departure_time
 
-def line_changes_cost(start_time: int, previous_connection: Connection, next_connection: Connection):
+def line_changes_cost(start_time: int, goal_stop: Stop, previous_connection: Connection, next_connection: Connection):
 
     
     if previous_connection == None and normalized_time_difference(start_time, next_connection.departure_time) > WAITING_LIMIT:
         return float('inf')
     elif previous_connection != None and normalized_time_difference(previous_connection.arrival_time, next_connection.departure_time) > WAITING_LIMIT:
         return float('inf')
+    
+    if previous_connection == None: # at start stop:
+        next_line_is_direct = any(next_connection.line == end_connection.line for end_connection in goal_stop.connections)
+        return 0 if next_line_is_direct else 1000
     
     return 1 if line_changed(previous_connection, next_connection) else 0
 

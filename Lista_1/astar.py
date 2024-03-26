@@ -22,7 +22,7 @@ def astar(start: Stop, goal: Stop, start_time, cost_fn, heuristic_fn):
             current_cost = cost_so_far[current]
             previous_connection = came_from[current][1]
 
-            new_cost = current_cost + cost_fn(start_time, current_cost, previous_connection, connection)
+            new_cost = current_cost + cost_fn(start_time, current_cost, goal, previous_connection, connection)
 
             if neighbor_stop not in cost_so_far or new_cost < cost_so_far[neighbor_stop]:
 
@@ -68,11 +68,11 @@ def main():
         return
     
     TIME_HEURISTIC_WEIGHT = 4.85 / 60 # km/h to km/min
-    TIME_COST_FUNCTION = lambda start_time, current_cost, _, connection : cf.calculate_time(start_time, current_cost, connection)
+    TIME_COST_FUNCTION = lambda start_time, current_cost, end, _, connection : cf.calculate_time(start_time, current_cost, connection)
     TIME_HEURISTIC = lambda start, end, *_: cf.time_heuristic(start, end, cf.euclidean_distance_gp, TIME_HEURISTIC_WEIGHT)
 
-    LINE_CHANGE_HEURITSTIC_WEIGHT = 0.25
-    LINE_CHANGE_COST_FUNCTION = lambda start_time, _, previous_connection, next_connection : cf.line_changes_cost(start_time, previous_connection, next_connection)
+    LINE_CHANGE_HEURITSTIC_WEIGHT = 10
+    LINE_CHANGE_COST_FUNCTION = lambda start_time, _, end, previous_connection, next_connection : cf.line_changes_cost(start_time, end, previous_connection, next_connection)
     LINE_CHANGE_HEURISTIC = lambda current, end, previous_connection, next_connection: cf.advanced_line_change_heuristic(normalized_time, current, end, previous_connection, next_connection, cf.euclidean_distance_gp, LINE_CHANGE_HEURITSTIC_WEIGHT)
 
     options_dict = {
